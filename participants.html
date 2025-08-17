@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Participants & Registration</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="container header-container">
+      <h1>Student Community</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="index.html#events">Events</a></li>
+          <li><a href="index.html#about">About</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+          <li><a href="participants.html">Participants</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="events">
+    <div class="container">
+      <h2>Register for an Event</h2>
+
+      <!-- Registration Form -->
+      <form id="participant-form">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="email" name="email" placeholder="Your Email" required>
+        <select name="event" required>
+          <option value="">Select Event</option>
+          <option value="Coding Bootcamp">Coding Bootcamp</option>
+          <option value="Art & Design Workshop">Art & Design Workshop</option>
+          <option value="Community Meetup">Community Meetup</option>
+        </select>
+        <button type="submit">Register</button>
+      </form>
+      <p id="form-confirmation" class="confirmation-message"></p>
+
+      <h2>Registered Participants</h2>
+      <div id="participants-list"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Student Community. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const participantsList = document.getElementById('participants-list');
+    const form = document.getElementById('participant-form');
+    const confirmation = document.getElementById('form-confirmation');
+
+    // Load participants from localStorage
+    function loadParticipants() {
+      participantsList.innerHTML = '';
+      const registrations = JSON.parse(localStorage.getItem("registrations")) || [];
+
+      if(registrations.length === 0){
+        participantsList.innerHTML = "<p>No participants registered yet.</p>";
+        return;
+      }
+
+      const grouped = {};
+      registrations.forEach(r=>{
+        if(!grouped[r.event]) grouped[r.event]=[];
+        grouped[r.event].push(r);
+      });
+
+      for(const event in grouped){
+        const section = document.createElement('div');
+        section.innerHTML = `<h3><i class="fa fa-calendar"></i> ${event}</h3>`;
+        const ul = document.createElement('ul');
+        grouped[event].forEach((p,i)=>{
+          const li = document.createElement('li');
+          li.textContent = `${p.name} (${p.email})`;
+          li.style.opacity = 0;
+          li.style.transform = 'translateX(-20px)';
+          ul.appendChild(li);
+          // Animate
+          setTimeout(()=>{ li.style.transition='0.5s'; li.style.opacity=1; li.style.transform='translateX(0)'; }, i*150);
+        });
+        section.appendChild(ul);
+        participantsList.appendChild(section);
+      }
+    }
+
+    loadParticipants();
+
+    // Form Submission
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const event = form.event.value;
+
+      if(!name || !email || !event || !/\S+@\S+\.\S+/.test(email)){
+        alert("Please fill all fields with valid data.");
+        return;
+      }
+
+      let registrations = JSON.parse(localStorage.getItem("registrations")) || [];
+      registrations.push({ event, name, email });
+      localStorage.setItem("registrations", JSON.stringify(registrations));
+
+      confirmation.textContent = `Thank you, ${name}! You are registered for ${event}.`;
+      form.reset();
+      loadParticipants(); // Update participant list dynamically
+    });
+  </script>
+</body>
+</html>
